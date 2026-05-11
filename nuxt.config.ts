@@ -1,10 +1,4 @@
-import { resolve } from "node:path"
-import { pathToFileURL } from "node:url"
-import { useNitro } from "@nuxt/kit"
-
 export default defineNuxtConfig({
-  ssr: false,
-
   experimental: {
     appManifest: false,
   },
@@ -12,28 +6,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@vite-pwa/nuxt',
-
-    function spaDevManifestWorkaround(_options, nuxt) {
-      nuxt.hook("vite:extendConfig", (_config, context) => {
-        if (!nuxt.options.dev || nuxt.options.ssr || !context.isClient) {
-          return
-        }
-
-        const nitro = useNitro()
-        const clientManifestPath = pathToFileURL(
-          resolve(nuxt.options.buildDir, "dist/server/client.manifest.mjs"),
-        ).href
-
-        nitro.options.virtual ||= {}
-        nitro.options._config.virtual ||= {}
-
-        for (const virtual of [nitro.options.virtual, nitro.options._config.virtual]) {
-          virtual["#build/dist/server/server.mjs"] = "export default () => {}"
-          virtual["#build/dist/server/client.manifest.mjs"] =
-            `export { default } from ${JSON.stringify(clientManifestPath)}`
-        }
-      })
-    },
   ],
 
   css: ['~/assets/css/main.css'],
